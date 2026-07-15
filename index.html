@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كوبونات R3 STORE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#05070a;
+    --bg-panel:#0c1016;
+    --panel-edge:#151b24;
+
+    --accent:#4fd3ff;
+
+    --text-light:#e9f1f7;
+    --text-dim:#6d7c8c;
+    --danger:#ff5b6e;
+  }
+
+  *{ box-sizing:border-box; }
+
+  .r3-coupons-section{
+    background:
+      radial-gradient(ellipse at 15% 0%, rgba(79,211,255,0.07), transparent 50%),
+      radial-gradient(ellipse at 90% 100%, rgba(79,211,255,0.05), transparent 45%),
+      var(--bg-deep);
+    padding: 60px 20px 80px;
+    font-family:'Cairo', sans-serif;
+    direction: rtl;
+    color: var(--text-light);
+  }
+
+  .r3-coupons-header{
+    text-align:center;
+    max-width: 620px;
+    margin: 0 auto 44px;
+  }
+
+  .r3-coupons-eyebrow{
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    font-size: 13px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .r3-coupons-title{
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 900;
+    margin: 0 0 12px;
+    line-height: 1.35;
+  }
+
+  .r3-coupons-sub{
+    color: var(--text-dim);
+    font-size: 14.5px;
+    line-height: 1.85;
+  }
+
+  .r3-coupons-grid{
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 22px;
+  }
+
+  /* ---------- Card shell — same look for every coupon, no ranking ---------- */
+  .r3-coupon-card{
+    position: relative;
+    background: linear-gradient(175deg, var(--bg-panel), #080b0f);
+    border: 1px solid var(--panel-edge);
+    border-radius: 14px;
+    padding: 2px;
+    min-height: 268px;
+    overflow: hidden;
+    transition: transform .25s ease;
+  }
+
+  .r3-coupon-card::before{
+    content:"";
+    position:absolute; inset:0;
+    border-radius: 14px;
+    padding: 1.5px;
+    background: linear-gradient(135deg, var(--accent), transparent 60%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: .3;
+    transition: opacity .3s ease;
+    pointer-events:none;
+  }
+
+  .r3-coupon-card.is-unlocked::before{ opacity: 1; }
+
+  .r3-coupon-card.is-shaking{ animation: r3-shake .4s ease; }
+  @keyframes r3-shake{
+    10%,90%{ transform: translateX(-2px); }
+    20%,80%{ transform: translateX(3px); }
+    30%,50%,70%{ transform: translateX(-5px); }
+    40%,60%{ transform: translateX(5px); }
+  }
+
+  .r3-coupon-inner{
+    position:relative;
+    background: linear-gradient(175deg, #0d1219, #080b0f);
+    border-radius: 13px;
+    height:100%;
+    padding: 20px;
+    display:flex;
+    flex-direction:column;
+    justify-content: space-between;
+  }
+
+  .r3-coupon-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom: 16px;
+  }
+
+  .r3-coupon-label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .r3-coupon-gem{
+    width: 9px; height: 9px;
+    border-radius: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    transform: rotate(45deg);
+    flex-shrink:0;
+  }
+
+  .r3-coupon-percent-ghost{
+    font-family:'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  /* ---------- Locked view ---------- */
+  .r3-lock-view{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap: 12px;
+  }
+
+  .r3-lock-label{
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: -2px;
+  }
+
+  .r3-code-input{
+    width:100%;
+    background: #05070a;
+    border: 1px solid var(--panel-edge);
+    border-radius: 9px;
+    padding: 12px 14px;
+    color: var(--text-light);
+    font-family:'Chakra Petch', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2.5px;
+    text-align:center;
+    outline:none;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+
+  .r3-code-input:focus{
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79,211,255,0.15);
+  }
+
+  .r3-unlock-btn{
+    background: var(--accent);
+    border:none;
+    border-radius: 9px;
+    padding: 11px 14px;
+    color:#05070a;
+    font-family:'Cairo', sans-serif;
+    font-weight:800;
+    font-size: 14px;
+    cursor:pointer;
+    transition: filter .2s ease, transform .1s ease;
+  }
+
+  .r3-unlock-btn:hover{ filter:brightness(1.1); }
+  .r3-unlock-btn:active{ transform: scale(.97); }
+
+  .r3-error-msg{
+    font-size: 12.5px;
+    color: var(--danger);
+    min-height: 16px;
+    text-align:center;
+  }
+
+  /* ---------- Scratch / reveal state ---------- */
+  .r3-reveal-wrap{
+    position: relative;
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius: 10px;
+    overflow:hidden;
+    min-height: 158px;
+  }
+
+  .r3-reveal-content{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap: 6px;
+    background:
+      radial-gradient(circle, rgba(79,211,255,0.14), transparent 70%),
+      #0a0e13;
+  }
+
+  .r3-discount-value{
+    font-family:'Chakra Petch', sans-serif;
+    font-weight: 700;
+    font-size: 48px;
+    color: var(--accent);
+    line-height:1;
+    text-shadow: 0 0 22px rgba(79,211,255,0.45);
+  }
+
+  .r3-discount-note{
+    font-size: 12.5px;
+    color: var(--text-dim);
+    text-align:center;
+    max-width: 88%;
+  }
+
+  .r3-scratch-canvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .r3-scratch-hint{
+    position:absolute;
+    bottom: 8px;
+    left:0; right:0;
+    text-align:center;
+    font-size: 11px;
+    color: rgba(233,241,247,0.5);
+    pointer-events:none;
+  }
+
+  .r3-progress-track{
+    margin-top: 12px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.07);
+    overflow:hidden;
+  }
+
+  .r3-progress-fill{
+    height:100%;
+    width:0%;
+    background: var(--accent);
+    transition: width .15s ease;
+  }
+</style>
+</head>
+<body>
+
+<section class="r3-coupons-section">
+  <div class="r3-coupons-header">
+    <div class="r3-coupons-eyebrow">R3 Store</div>
+    <h2 class="r3-coupons-title">افتح كوبونك وخربش عشان تشوف الخصم</h2>
+    <p class="r3-coupons-sub">
+      عندك كود؟ اكتبه تحت الكارت بتاعه، وبعدها خربش عليه بإصبعك أو الماوس عشان تكشف قيمة الخصم.
+    </p>
+  </div>
+
+  <div class="r3-coupons-grid" id="r3-coupons-grid"></div>
+</section>
+
+<script>
+(function(){
+
+  // ============ إعدادات الأكواد والخصومات ============
+  // كل الكوبونات نفس الشكل بالظبط، مفيش كوبون "أحسن" من التاني شكليًا
+  // كل كارت محتاج: id فريد، label (العنوان اللي يظهر فوق)، code (الكود السري)،
+  // discount (نص الخصم اللي يظهر)، note (وصف قصير)
+  const COUPONS = [
+    // كوبونات دايمة عامة
+    { id:'g1', label:'كوبون 5',   code:'TRXTJDY', discount:'20ج', note:' خصم على أي منتج بالموقع برجاء تعمل سكرين شوت وتبعتها مع الطلب' },
+    { id:'g2', label:'كوبون 6',   code:'YYDJICEH', discount:'25ج', note:' خصم على اشتراكات وشحن الألعاب برجاء تعمل سكرين شوت وتبعتها مع الطلب' },
+    { id:'g3', label:'كوبون 7',   code:'HIFRJZJH', discount:'30ج', note:'خصم على حسابات الإيجار برجاء تعمل سكرين شوت وتبعتها مع الطلب(Rent)' },
+    { id:'g4', label:'كوبون 8',   code:'IHBTJXDHBK', discount:'35ج', note:'خصم على أي منتج بالموقع برجاء تعمل سكرين شوت وتبعتها مع الطلب' },
+
+    { id:'m1', label:'9 كوبون', code:'JTDJOCYHZ', discount:'40ج', note:'خصم على أي منتج بالموقع 1 برجاء تعمل سكرين شوت وتبعتها مع الطلب' },
+    
+    // كوبونات فوز توقعات المونديال - الماتشات الباقية
+    
+    { id:'m2', label:'2توقع الماتش', code:'IGFIBXIB', discount:'80ج', note:'كوبون فوز توقع الماتش رقم 2 برجاء تعمل سكرين شوت وتبعتها مع الطلب' },
+    { id:'m3', label:'3توقع الماتش', code:'GUJXFJB', discount:'80ج', note:'كوبون فوز توقع الماتش رقم 3 برجاء تعمل سكرين شوت وتبعتها مع الطلب' },
+    { id:'m4', label:'4توقع الماتش', code:'UHXUNC', discount:'80ج', note:'كوبون فوز توقع الماتش رقم 4 برجاء تعمل سكرين شوت وتبعتها مع الطلب' },
+    { id:'m5', label:'توقع النهائي', code:'GDYHCFJN',  discount:'100ج', note:'كوبون فوز توقع نتيجة النهائي برجاء تعمل سكرين شوت وتبعتها مع الطلب' }
+  ];
+  // ====================================================
+
+  const grid = document.getElementById('r3-coupons-grid');
+
+  COUPONS.forEach(coupon => {
+    const card = document.createElement('div');
+    card.className = 'r3-coupon-card';
+    card.id = 'card-' + coupon.id;
+
+    card.innerHTML = `
+      <div class="r3-coupon-inner">
+        <div class="r3-coupon-top">
+          <div class="r3-coupon-label">
+            <span class="r3-coupon-gem"></span>
+            ${coupon.label}
+          </div>
+          <span class="r3-coupon-percent-ghost"></span>
+        </div>
+
+        <div class="r3-lock-view" data-role="lock-view">
+          <div class="r3-lock-label">أدخل الكود عشان تفتح الكوبون</div>
+          <input type="text" class="r3-code-input" placeholder="اكتب الكود هنا" data-role="code-input" autocomplete="off">
+          <button class="r3-unlock-btn" data-role="unlock-btn">افتح الكوبون</button>
+          <div class="r3-error-msg" data-role="error-msg"></div>
+        </div>
+
+        <div class="r3-reveal-wrap" data-role="reveal-wrap" style="display:none;">
+          <div class="r3-reveal-content">
+            <div class="r3-discount-value">${coupon.discount}</div>
+            <div class="r3-discount-note">${coupon.note}</div>
+          </div>
+          <canvas class="r3-scratch-canvas" data-role="scratch-canvas"></canvas>
+          <div class="r3-scratch-hint" data-role="scratch-hint">خربش هنا 👆</div>
+        </div>
+        <div class="r3-progress-track" data-role="progress-track" style="display:none;">
+          <div class="r3-progress-fill" data-role="progress-fill"></div>
+        </div>
+      </div>
+    `;
+
+    grid.appendChild(card);
+
+    const input      = card.querySelector('[data-role="code-input"]');
+    const unlockBtn  = card.querySelector('[data-role="unlock-btn"]');
+    const errorMsg   = card.querySelector('[data-role="error-msg"]');
+    const lockView   = card.querySelector('[data-role="lock-view"]');
+    const revealWrap = card.querySelector('[data-role="reveal-wrap"]');
+    const canvas     = card.querySelector('[data-role="scratch-canvas"]');
+    const scratchHint= card.querySelector('[data-role="scratch-hint"]');
+    const progressTrack = card.querySelector('[data-role="progress-track"]');
+    const progressFill  = card.querySelector('[data-role="progress-fill"]');
+
+    function tryUnlock(){
+      const entered = input.value.trim().toUpperCase();
+      if(entered === coupon.code){
+        lockView.style.display = 'none';
+        revealWrap.style.display = 'flex';
+        progressTrack.style.display = 'block';
+        card.classList.add('is-unlocked');
+        initScratchCanvas();
+      } else {
+        errorMsg.textContent = 'الكود غلط، جرب تاني';
+        card.classList.remove('is-shaking');
+        void card.offsetWidth;
+        card.classList.add('is-shaking');
+      }
+    }
+
+    unlockBtn.addEventListener('click', tryUnlock);
+    input.addEventListener('keydown', e => { if(e.key === 'Enter') tryUnlock(); });
+
+    function initScratchCanvas(){
+      const ctx = canvas.getContext('2d');
+      let scratching = false;
+      let revealed = false;
+
+      function resize(){
+        const rect = revealWrap.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        drawCover();
+      }
+
+      function drawCover(){
+        ctx.globalCompositeOperation = 'source-over';
+        const grad = ctx.createLinearGradient(0,0,canvas.width, canvas.height);
+        grad.addColorStop(0, '#232b34');
+        grad.addColorStop(1, '#12171d');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        for(let i=0;i<canvas.width;i+=18){
+          ctx.fillRect(i,0,1,canvas.height);
+        }
+      }
+
+      function getPos(e){
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+
+      function scratchAt(x,y){
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x,y, 22, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      function calcProgress(){
+        const data = ctx.getImageData(0,0,canvas.width, canvas.height).data;
+        let cleared = 0;
+        const total = data.length / 4;
+        for(let i=3;i<data.length;i+=4*8){
+          if(data[i] === 0) cleared++;
+        }
+        const sampled = Math.ceil(total/8);
+        const pct = Math.min(100, Math.round((cleared/sampled)*100));
+        progressFill.style.width = pct + '%';
+        if(pct > 55 && !revealed){
+          revealed = true;
+          fullyReveal();
+        }
+      }
+
+      function fullyReveal(){
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        scratchHint.style.display = 'none';
+        progressFill.style.width = '100%';
+      }
+
+      function start(e){
+        scratching = true;
+        const p = getPos(e);
+        scratchAt(p.x, p.y);
+      }
+      function move(e){
+        if(!scratching || revealed) return;
+        e.preventDefault();
+        const p = getPos(e);
+        scratchAt(p.x, p.y);
+        calcProgress();
+      }
+      function end(){ scratching = false; }
+
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', end);
+
+      canvas.addEventListener('touchstart', start, {passive:true});
+      canvas.addEventListener('touchmove', move, {passive:false});
+      canvas.addEventListener('touchend', end);
+
+      window.addEventListener('resize', resize);
+      resize();
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
